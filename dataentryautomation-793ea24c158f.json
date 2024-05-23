@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "dataentryautomation",
+  "private_key_id": "793ea24c158fd6788ea7a84f4203c6a5751c3384",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDJ41JO0K8LchJD\nOu43VUfsUs+EiHwbfDAHPUmhWer2C7WoFLHswaYOAJC0yPuGDcSH+iqcXv0YhaQP\nI0o1T5dGlOk/w1U9WqHg13T+um8l7351OiyPQskPBGgHWlDCfk1uMqrSraEZYOnA\nlQ+NaRLUVCAUNQeuzVuNw46VRgzg9csn05rU3DjwquuNAtikAy033/GUQyxzZUkH\nu90PK9BOlzeG3IUAbKi2RtQNFw1+oCcvN+pNyYVj2Ml3iI+TXtCf+sZfb8mTicvl\naXxoLUdNsm3gGyxfr5nNP/4j3sWG/XhUtwSv9cPgoV5MRzcXBpisVNGmn0Ubue59\nvKsqRALbAgMBAAECggEADMKQ4QlgiZJ9TqwqrUBMdPEroN6i1XaNGeVeQilK5/Uy\ngeaY856uWPk2gYP9yGnAr7AjQac2oPZQDw2LHavOTbg7YSZ+keD+FUDDlMFXer1/\nL81BpBEJCylwonJWDgzp5kVOiv/4DCtrasV2aljR8gNFKccg7q6XvZyMEP7l8SaK\n+u92jvYj4dgslcRkq5k6gjIjKg/L5vld8xrbRVpXYpdmJkf72AJzvxiLpg7s0HDJ\nnvAc/NbOYSU5hljfMA0dgoRolN6yvE2T+RuyT0CR9I1XmFtzZlyymBreASsKj8js\nOZsCezLXoy5MzG/l/LowU77F9vMh3qtsLRPtWo2GLQKBgQD8MDGXvQHFvwChKz+2\nLwge698KZyLLga7kV5DrF3O5RPSxBXhz6BGgyMdnmX820jSUcgKjt1X+CYJ2pICf\n6MS1srDV4GTrZYKfzDP/smQ3yOAPFZKSuFpuLwxxLKl+mRoymMZIQB8Ju5BcMjsk\neD/mkeBmksAEJ9gq6YTjWJFhFwKBgQDM8H+BbIroif00RStRgq0oBablH9ydDUff\neP/lgFbBacXp38mPk4LwrScUxujsFh5LZ25dtyXRar1UOITBngmDKRQPtdrm5N1D\nRgbKGfdBknD6x+oW6OkO7sufF6w0GaqJSJSCflz5aNEv6hCzzlf2FLNp842fYUF/\nJvv6zEGe3QKBgQDKVFA1kWquoIN8yxoerLUzOcKEsiJ0a+NJSAf41aP+7Jf0vpLZ\nS0N5YBy7vacW8KdGwgHkH99aJX8KeQjJQxMvQ+IkdhgB1DtswYSmjRVivEMnVwN1\nu3qyFAVDd7W04FjoZzIOHYPJZzZ3AcX5iJCcCEWlhe+QZfdE1n3LeO+KmQKBgBBP\nk9ZZLTUUxnJCjxANtnpY+M+DmatmQzImDzfU3xLFuFrE1OX4d5NwNIwSyLcBi6e0\ns7QBv6DLPgZV+TrvuRIXUuFtN97omDOifyfWqTcu0I8lGhx4rRPjLZGb8Li00j3a\n6Pb516yCCyQlHO8ynQ2Y2C62k677rprQH332g8KBAoGBALBEAAg5jYLfA6DDAJkN\nn8uxItKXl1yokfuqnw7cxG6p5NfzkRb9xEpWO8tl9UnuMhAs5HI0I/XUN2b+3WJX\n1WLDj33fe73uWupfGImYCJLOfZFaqATcMj8382dCPz3Eh4A0A9msi/mg63HC7yeO\nPYg9C36Tmmygb9icZMSsGXRO\n-----END PRIVATE KEY-----\n",
+  "client_email": "dataocr@dataentryautomation.iam.gserviceaccount.com",
+  "client_id": "106336120964438689932",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/dataocr%40dataentryautomation.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
