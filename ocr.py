@@ -8,47 +8,49 @@ from PIL import Image
 
 #Function to remove exif
 def removeExif(imgPath):
-    with Image.open(imgPath) as image: 
-        data = list(image.getdata())
-        imageWithoutExif = Image.new(image.mode, image.size)
-        imageWithoutExif.putdata(data)
-        imageWithoutExif.save(imgPath)
+    image = Image.open(imgPath)
+    data = list(image.getdata())
+    imageWithoutExif = Image.new(image.mode, image.size)
+    imageWithoutExif.putdata(data)
+    imageWithoutExif.save(imgPath)
 
-def findMidPoint(vertexLst):
-    sumX = None
-    sumY = None
-    for vertex in vertexLst:
-        sumX += vertex.x
-        sumY += vertex.y
-    midX = sumX / vertexLst
-    midY = sumY / vertexLst
-    return (midX, midY)
-    
-
+#Temprorary fix 
 #Temprorary fix (Rotating Image)
 def rotateImage(imgPath):
     with Image.open(imgPath) as img: #This will automatically close the img after opening
-        rotated_img = img.rotate(-90, expand=True) #CW .. expand adjusts frame of photo
-        rotated_img.save(imgPath)
+        rotated_img = img.rotate(90, expand=True) #CW .. expand adjusts frame of photo
         removeExif(path)
+        rotated_img.save(imgPath)
 
+
+#Midpoint Function 
+def findMidPoint(vertexLst):
+    sumX = 0
+    sumY = 0
+    for vertex in vertexLst:
+        sumX = sumX + vertex.x
+        sumY = sumY + vertex.y
+    midX = sumX / len(vertexLst)
+    midY = sumY / len(vertexLst)
+    return (midX, midY)
 
 #Creating cloud object to interact with GoogleVisionAPI (Setup for API interaction)
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/anamuuenishi/Desktop/dataEntryEnv/dataentryautomation-793ea24c158f.json'
-client = vision.ImageAnnotatorClient() 
+client = vision.ImageAnnotatorClient() #Creating cloud object to interact with GoogleVisionAPI
+
+
 
 #Editting/Sending img to GoogleVision OCR API
-path = '/Users/anamuuenishi/Desktop/dataEntryEnv/Te2.jpg'
+path = '/Users/anamuuenishi/Desktop/dataEntryEnv/Tes10.jpg'
+rotateImage(path)
 
 
 with io.open(path, 'rb') as image_file: #read in binary mode 
     binaryImg = image_file.read()
+
 clientImage = vision.Image(content=binaryImg) #Creating an image object 
 response = client.text_detection(image=clientImage)
 texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
-
-
-
 
 #Creating txt file for parsed OCR Data
 f = open('/Users/anamuuenishi/Desktop/dataEntryEnv/data.txt', 'a')
@@ -59,7 +61,7 @@ for text in texts:
         f.write(f"({vertex.x}, {vertex.y})\n")
     f.write("\n")
 
-#Creating midpoint dictonaries
+#Finding Midpoints 
 text_midpoints = {}
 for text in texts: 
     key = text.description
@@ -67,4 +69,3 @@ for text in texts:
     text_midpoints[key] = val
 
 print(text_midpoints)
-
