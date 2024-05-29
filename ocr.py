@@ -34,6 +34,43 @@ def findMidPoint(vertexLst):
     midY = sumY / len(vertexLst)
     return (midX, midY)
 
+def getOCRdata(imgPath):
+    with io.open(imgPath, 'rb') as image_file: #read in binary mode 
+        binaryImg = image_file.read()
+
+    clientImage = vision.Image(content=binaryImg) #Creating an image object 
+    response = client.text_detection(image=clientImage)
+    texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
+
+    #Creating txt file for parsed OCR Data
+    f = open('/Users/anamuuenishi/Desktop/dataEntryEnv/data.txt', 'a')
+    ocrData = []
+    for text in texts: 
+        vertices = text.bounding_poly.vertices
+        ocrData.append = [{'item':text.description, 
+                           'x1': vertices[0].x, 'y1': vertices[0].y,
+                           'x2': vertices[1].x, 'y2':vertices[1].y,
+                           'x3':vertices[2].x, 'y3':vertices[2].y, 
+                           'x4':vertices[3].x, 'y4':vertices[3].y}]
+    return ocrData 
+
+def normalizeData(ocrData, width, height):
+    for eachData in ocrData: 
+        eachData['x1'] /= width
+        eachData['x2'] /= width 
+        eachData['x3'] /= width 
+        eachData['x4'] /= width
+        eachData['y1'] /= height
+        eachData['y2'] /= height
+        eachData['y3'] /= height
+        eachData['y4'] /= height
+
+    return ocrData
+
+
+
+
+
 #Creating cloud object to interact with GoogleVisionAPI (Setup for API interaction)
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/anamuuenishi/Desktop/dataEntryEnv/dataentryautomation-793ea24c158f.json'
 client = vision.ImageAnnotatorClient() #Creating cloud object to interact with GoogleVisionAPI
@@ -41,26 +78,14 @@ client = vision.ImageAnnotatorClient() #Creating cloud object to interact with G
 
 
 #Editting/Sending img to GoogleVision OCR API
-path = '/Users/anamuuenishi/Desktop/dataEntryEnv/Tes10.jpg'
-rotateImage(path)
+path = '/Users/anamuuenishi/Desktop/dataEntryEnv/MLModelTrainImages/Test1.jpg'
+ocrData = getOCRdata(path)
 
 
-with io.open(path, 'rb') as image_file: #read in binary mode 
-    binaryImg = image_file.read()
 
-clientImage = vision.Image(content=binaryImg) #Creating an image object 
-response = client.text_detection(image=clientImage)
-texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
 
-#Creating txt file for parsed OCR Data
-f = open('/Users/anamuuenishi/Desktop/dataEntryEnv/data.txt', 'a')
-for text in texts: 
-    f.write(f"Description: {text.description}\n")
-    f.write("Vertices:\n")
-    for vertex in text.bounding_poly.vertices: 
-        f.write(f"({vertex.x}, {vertex.y})\n")
-    f.write("\n")
 
+'''
 #Finding Midpoints 
 text_midpoints = {}
 for text in texts: 
@@ -69,3 +94,4 @@ for text in texts:
     text_midpoints[key] = val
 
 print(text_midpoints)
+'''
