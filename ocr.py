@@ -42,17 +42,20 @@ def getOCRdata(imgPath):
     response = client.text_detection(image=clientImage)
     texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
 
-    #Creating txt file for parsed OCR Data
-    f = open('/Users/anamuuenishi/Desktop/dataEntryEnv/data.txt', 'a')
+    #Creating lst with dictionary
     ocrData = []
     for text in texts: 
         vertices = text.bounding_poly.vertices
-        ocrData.append = [{'item':text.description, 
+        ocrData.append({'item':text.description, 
                            'x1': vertices[0].x, 'y1': vertices[0].y,
                            'x2': vertices[1].x, 'y2':vertices[1].y,
                            'x3':vertices[2].x, 'y3':vertices[2].y, 
-                           'x4':vertices[3].x, 'y4':vertices[3].y}]
+                           'x4':vertices[3].x, 'y4':vertices[3].y})
     return ocrData 
+
+def detDimension(ocrData):
+    width = ocrData[0]['x2'] - ocrData[0]['x1'] 
+
 
 def normalizeData(ocrData, width, height):
     for eachData in ocrData: 
@@ -82,7 +85,7 @@ path = '/Users/anamuuenishi/Desktop/dataEntryEnv/MLModelTrainImages/Test1.jpg'
 ocrData = getOCRdata(path)
 
 
-
+print(ocrData)
 
 
 '''
