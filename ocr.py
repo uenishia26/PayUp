@@ -13,37 +13,40 @@ import numpy as np
 
 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
-def crop_image(image_path, text):
-    image = cv2.imread(image_path)
+def crop_image(image, text):
     if (image.shape[0] > 1000 and image.shape[1] > 1000):
         xval = []
         yval = []
         for vertex in text.bounding_poly.vertices:  
             xval.append(vertex.x)
             yval.append(vertex.y)
-        y= image.shape[1] - max(yval)
-        x= image.shape[0] - max(xval)
-        h= image.shape[1] - min(yval)
-        w= image.shape[0] - min(xval)
+        y = image.shape[1] - max(yval)
+        x = min(xval)
+        h = image.shape[1] - min(yval)
+        w = max(xval)
         image = image[x:w, y:h]
     return image
 
 def preprocess_image(image_path, text):
-    image = crop_image(image_path, text)
+    image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f"Image not found at path: {image_path}")
     
-    # Resize the image to improve OCR accuracy
-    image = cv2.resize(image, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
     # Convert to grayscale
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
     # Apply dilation and erosion to remove noise
     kernel = np.ones((1, 1), np.uint8)
     image = cv2.dilate(image, kernel, iterations=1)
     image = cv2.erode(image, kernel, iterations=1)
-    # Apply thresholding
+
+     # Apply thresholding
     image = cv2.threshold(cv2.medianBlur(image, 3), 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
     
+    image = crop_image(image, text)
+    # Resize the image to improve OCR accuracy
+    image = cv2.resize(image, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
+
     return image
 
 def extract_info(imginfo, pattern, label):
@@ -88,7 +91,8 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './dataentryautomation-793ea24c15
 client = vision.ImageAnnotatorClient() 
 
 #Editting/Sending img to GoogleVision OCR API
-path = './input/IMG_0220.jpg'
+name = 'IMG_0192.jpg'
+path = './input/' + name
 
 
 with io.open(path, 'rb') as image_file: #read in binary mode 
@@ -127,7 +131,7 @@ try:
                 print("Image is at the correct angle")
     
     # Optionally, save or display the rotated image
-    output_path = './output/rotated_image.jpg'
+    output_path = './output/' + name
     cv2.imwrite(output_path, rotated_image)
     print(f"Rotated image saved at {output_path}")
     

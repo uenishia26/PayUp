@@ -10,19 +10,17 @@ pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesse
 
 def crop_image(image_path):
     image = cv2.imread(image_path)
-    minval = 999999999
-    maxval = 0
-    y= image.shape[1] - 2578
-    x= image.shape[0] - 4627
-    h= image.shape[1] - 1697
-    w= image.shape[0] - 1491
+    y= 1402
+    x= 1633
+    h= 2799
+    w= 4629
     crop_image = image[x:w, y:h]
-    cv2.imshow("Cropped", crop_image)
-    cv2.waitKey(0)
+    output_path = './output/crop_image.jpg'
+    cv2.imwrite(output_path, crop_image)
     return crop_image
 
 def preprocess_image(image_path):
-    image = cv2.imread(image_path)
+    image = crop_image(image_path)
     if image is None:
         raise FileNotFoundError(f"Image not found at path: {image_path}")
     
@@ -49,7 +47,7 @@ def extract_info(imginfo, pattern, label):
         print(f"No {label.lower()} found.")
         return None
 
-image_path = './output/IMG_0201.jpg'
+image_path = './input/IMG_0203.jpg'
 try:
     image = preprocess_image(image_path)
     

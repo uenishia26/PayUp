@@ -27,7 +27,7 @@ def normalizeCoordinates(x1,y1,x2,y2,x3,y3,x4,y4, width, height):
         y3[index] = y3[index]/height
         y4[index] = y4[index]/height 
 
-df = pd.read_csv("/drive/notebooks/dataMLModel/data1.csv")
+df = pd.read_csv("./data1.csv")
 df["region_shape_attributes"] = df.apply(jsonCoordinates, axis=1) #Applies function for every row (axis=1 is row)
 df["region_attributes"] = df.apply(jsonLabel, axis=1)
 
@@ -63,7 +63,7 @@ for row in df["region_shape_attributes"]:
 
 #Iterate over label column 
 for row in df["region_attributes"]:
-    labelTyp.append(row["label"])
+    labelTyp.append(row['label'])
 
 #Setting the width and height 
 widthLst = [width] * len(df)
@@ -78,7 +78,7 @@ normalizeCoordinates(x1List,y1List,
 
 #Creating new CSV file w/h only important data 
 csvDict = {"filename":fileName, 
-           "class": labelTyp, 
+           "label": labelTyp, 
            "width": widthLst,
            "height": heightLst,
            "x1":x1List, "y1":y1List, "x2":x2List, "y2":y2List, "x3":x3List, "y3":y3List, "x4":x4List, "y4":y4List}
