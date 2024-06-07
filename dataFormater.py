@@ -18,7 +18,7 @@ def jsonLabel(row):
     height = 5551"""
 
 def normalizeCoordinates(x1,y1,x2,y2,x3,y3,x4,y4, width, height):
-    for index in range(1,len(x1)):
+    for index in range(0,len(x1)):
         x1[index] = x1[index]/width
         x2[index] = x2[index]/width
         x3[index] = x3[index]/width 
@@ -34,10 +34,10 @@ def resetCoord():
 def appendToCSV(newdf, currentcsv):
     global firstTime 
     if firstTime: 
-        newdf.to_csv(currentcsv, mode='a') #to_csv handles opening/closing of file 
+        newdf.to_csv(currentcsv, mode='a', index=False) #to_csv handles opening/closing of file 
         firstTime = False
     else: 
-        newdf.to_csv(currentcsv, mode='a', header=False)
+        newdf.to_csv(currentcsv, mode='a', header=False, index=False)
 
 def deleteCSV():
     if os.path.exists("formatedData.csv"):
@@ -46,9 +46,10 @@ def deleteCSV():
 #Adding class lst & fileName lst 
 def finalizecsv(filenamelst, finalcsvname, labeltyp):
     df = pd.read_csv(finalcsvname)
-    print(len(df))
     df.insert(0, 'filename', filenamelst)
-    df['class'] = labelTyp
+    df['label'] = labelTyp 
+    return df  
+    
 
 
 # ---- *** End of all utility functions for the dataFormater program *** ----
@@ -70,8 +71,7 @@ currentfilename = ""
 firstTime = True #Prevents adding column name every append to existing dataFrame
 finalcsvname = "formatedData.csv"
 
-
-df = pd.read_csv("./MLModelSavedCSV/data1.csv") 
+df = pd.read_csv("./MLModelSavedCSV/data1.csv")  #*** Change file path *** 
 df["region_shape_attributes"] = df.apply(jsonCoordinates, axis=1) #Applies function for every row 
 df["region_attributes"] = df.apply(jsonLabel, axis=1)
 deleteCSV()
@@ -90,20 +90,24 @@ for row in df["region_shape_attributes"]:
         - Change the filename to current file name 
         - Reset x1..y4 lst 
     """
-    if currentfilename != filenamelst[fileindex] or fileindex == len(df): 
+    if currentfilename != filenamelst[fileindex]: 
+        currentfilename = filenamelst[fileindex] #Changing fileindex
+
+        widthLst = [x1List[0]] * len(x1List) #Need to store width / height info before normalizing coordinates 
+        heightLst = [y1List[0]] * len(y1List)
         """
         normalizeCoordinates(x1List,y1List, x2List, y2List, x3List, y3List, x4List, y4List,
-                            x1List[0], y1List[0]) """
-        currentfilename = filenamelst[fileindex]
-        widthLst = [x1List[0]] * len(x1List)
-        heightLst = [y1List[0]] * len(y1List)
-        csvDict = {
+                            x1List[0], y1List[0])  
+                            """
+        csvDict = { #Creating Dictionary 
         "width": widthLst,
         "height": heightLst,
         "x1":x1List, "y1":y1List, "x2":x2List, "y2":y2List, "x3":x3List, "y3":y3List, "x4":x4List, "y4":y4List}
+
         newDF = pd.DataFrame(csvDict)
         appendToCSV(newDF,finalcsvname)
-        x1List, y1List, x2List, y2List, x3List, y3List, x4List, y4List = resetCoord()
+
+        x1List, y1List, x2List, y2List, x3List, y3List, x4List, y4List = resetCoord() #Resetting all coordinates
 
     #Appending ALL x,y coordinates for a specifc row 
     xList = row["all_points_x"]
@@ -121,5 +125,25 @@ for row in df["region_shape_attributes"]:
     #Increasing fileIndex everyLoop 
     fileindex = fileindex + 1
 
-#finalizecsv(filenamelst, finalcsvname, labelTyp)
-print(fileindex)
+    #Checking if we reached end of dataFrame (Appending the last set of Data)
+    if fileindex == len(df): 
+        widthLst = [x1List[0]] * len(x1List)
+        heightLst = [y1List[0]] * len(y1List)
+        """
+        normalizeCoordinates(x1List,y1List, x2List, y2List, x3List, y3List, x4List, y4List,
+                            x1List[0], y1List[0])  """
+        csvDict = {
+        "width": widthLst,
+        "height": heightLst,
+        "x1":x1List, "y1":y1List, "x2":x2List, "y2":y2List, "x3":x3List, "y3":y3List, "x4":x4List, "y4":y4List}
+        newDF = pd.DataFrame(csvDict)
+        appendToCSV(newDF,finalcsvname)
+        x1List, y1List, x2List, y2List, x3List, y3List, x4List, y4List = resetCoord()
+
+
+#Adding the name / label column (Finalizing the DataFrame)
+finalDF = finalizecsv(filenamelst, finalcsvname, labelTyp)
+finalDF.to_csv(finalcsvname)
+
+
+
