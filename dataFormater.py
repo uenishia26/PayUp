@@ -95,10 +95,8 @@ for row in df["region_shape_attributes"]:
 
         widthLst = [x1List[0]] * len(x1List) #Need to store width / height info before normalizing coordinates 
         heightLst = [y1List[0]] * len(y1List)
-        """
         normalizeCoordinates(x1List,y1List, x2List, y2List, x3List, y3List, x4List, y4List,
                             x1List[0], y1List[0])  
-                            """
         csvDict = { #Creating Dictionary 
         "width": widthLst,
         "height": heightLst,
@@ -144,6 +142,7 @@ for row in df["region_shape_attributes"]:
 #Adding the name / label column (Finalizing the DataFrame)
 finalDF = finalizecsv(filenamelst, finalcsvname, labelTyp)
 finalDF.to_csv(finalcsvname)
-
+finalDF = finalDF.drop(finalDF[(finalDF.label == 'dimension')].index)
+finalDF = finalDF.drop(['filename', 'width', 'height'], axis=1)
 
 
