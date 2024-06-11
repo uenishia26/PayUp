@@ -1,5 +1,5 @@
 import requests 
-import json 
+import json
 from google.oauth2 import service_account
 from google.cloud import vision
 import os #Allows interaction with OS 
@@ -29,7 +29,7 @@ def crop_image(image, text):
 
 def ouput_image(image):
     # Optionally, save or display the rotated image
-    output_path = './output/' + name
+    output_path = './test/' + name
     cv2.imwrite(output_path, image)
     print(f"Rotated image saved at {output_path}")
 
@@ -93,6 +93,8 @@ def image_orient(path, texts):
         
     except Exception as e:
         print(f"Take a better photo {e}")
+    
+    return image
 
 def extract_info(imginfo, pattern, label):
     match = re.search(pattern, imginfo)
@@ -136,8 +138,8 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './dataentryautomation-793ea24c15
 client = vision.ImageAnnotatorClient() 
 
 #Editting/Sending img to GoogleVision OCR API
-name = 'IMG_0192.jpg'
-path = './input/' + name
+name = 'IMG_0213.jpg'
+path = './test/' + name
 
 
 with io.open(path, 'rb') as image_file: #read in binary mode 
@@ -145,13 +147,24 @@ with io.open(path, 'rb') as image_file: #read in binary mode
 clientImage = vision.Image(content=binaryImg) #Creating an image object 
 response = client.text_detection(image=clientImage)
 texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
-image_orient(path,texts)
-
-#Creating txt file for parsed OCR Data
+img = image_orient(path,texts)
+with io.open(path, 'rb') as image_file: #read in binary mode 
+    binaryImg = image_file.read()
+clientImage = vision.Image(content=binaryImg) #Creating an image object 
+response = client.text_detection(image=clientImage)
+texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
+#Creating txt file for parsed OCR Data\
+ocrdata = {}
 f = open('./data.txt', 'a')
 for text in texts: 
     f.write(f"Description: {text.description}\n")
     f.write("Vertices:\n")
+    tmp = []
     for vertex in text.bounding_poly.vertices: 
         f.write(f"({vertex.x}, {vertex.y})\n")
+        tmp.append(vertex.x/img.shape[1])
+        tmp.append(vertex.y/img.shape[0])
+    ocrdata[text.description] = tmp
     f.write("\n")
+
+print(ocrdata)
