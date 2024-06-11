@@ -1,0 +1,24 @@
+How SVM works for dataEntry 
+
+  Quick Recap:
+    - SVM is inhrently not a Binary Classifier 
+  - Our model uses 'ovo' (SVM is not suitable for large datasets due to training complexity)
+    - 'OVO' allows us to split the data into pairwise pairs unlike another multiclass method like 'ovr'
+    
+  Important details for our dataEntry: 
+    Four labels [Item, itemprice, name, total] (IN ORDER)
+      - You can always check by just using .value_counts()
+    Using 'ovo' thus we have 6 SVM binary classifiers 
+      - Ex of pairing might look like: Item vs itemprice , Item vs name
+        For each of these pairing, decision_function(X) will return the index of the highest confidence level and distance to the hyperplane 
+        - Ex: [1.24, -0.24, 2.4, -0.08, 3.2, -0.983] len 6 each repersenting the 6 diffrent pairwise estimators 
+        - The negative values indicate which side of the plane is in favour. For example, if we had item vs itemprice, this would indicate itemprice wins 
+        - bigger the numerical number the better as it is further away from the hyperplane thus indicating that a specifc point is deeply among one of the labels 
+        - For each row, will have there own array of 6 and whichever one has the highest count in the voting system is the choosen class 
+          Key note: decision_function(x) output is diffrent on if you were to run it directly on a SVC vs a OvO 
+    Use of stratification
+      - Our model will be using stratification as our dataset is imbalnced. In other words our dataset mostly concsits of Item and Itemprice and thus total
+        and name is under repersented. Why use stratify? To insure that our data after test split has an equal distribution of all categories to prvent cases 
+        where the test set might have all the name label but none in the training set
+            
+        
