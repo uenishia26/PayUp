@@ -1,5 +1,10 @@
 How SVM works for dataEntry 
 
+Computer Stats: 
+  Running 600 combinations with a 5 fold is max using 98% of CPU (GridSearchCV) 
+  Anything above this, the computer will crash
+
+
   Quick Recap:
     - SVM is inhrently not a Binary Classifier 
   - Our model uses 'ovo' (SVM is not suitable for large datasets due to training complexity)
