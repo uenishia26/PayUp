@@ -20,5 +20,41 @@ How SVM works for dataEntry
       - Our model will be using stratification as our dataset is imbalnced. In other words our dataset mostly concsits of Item and Itemprice and thus total
         and name is under repersented. Why use stratify? To insure that our data after test split has an equal distribution of all categories to prvent cases 
         where the test set might have all the name label but none in the training set
-            
+
+    Diffrences / Parameters of different Kernels
+    RBF:
+      Infinite Dimensions (C is a parameter for all Kernels / Gamma for some Kernel)
+      C - High C indicates smaller margin (more fine tuned to the specifc dataset) **Cause overfit
+          Low C indicates larger margins (more broad) **Okay with some misclassification 
+      Gamma - The influence each dataPoint has 
+          Large gamma - Each training point has a lot of infleunce (Wavy complex decision boundaries)
+          Small gamma - Each training point has less influence (more broad) 
+          Ex: Imagine like a torch/light
+            Large gamma = very bright but accurate spotlight
+            Small gamma = slightlyt dim broader fuzzy spotlight 
+    Poly: 
+      Imagine like a polynomial LINE
+        Degree - Like 2 = Quadratic, 3 = Cubic etc
+        Coeff - Indepedent Term
+
+    Diffrence between Poly & RBF
+      Imagine the Poly kernel as a very flexible ruler that can bend in all sorts of ways
+      Imagine the RBF kernel as many super bendy circles that cluster around data points tightly or loosley depending on gamma 
+
+    Quick Breakdown: 
+      Currently the Poly kernel is outperfroming the rbf kernel 
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
         
