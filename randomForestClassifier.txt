@@ -1,0 +1,84 @@
+Random Forest Classifier: 
+
+  Ensemble learning technique:
+    Ensemble meaning using multiple different models (aka different trees) to take a vote and which every label gets the most votes = the vote
+
+Random forest uses a technique called bagging (boostrap aggregating) to create subsets
+  Sampling with replacment for training set 
+    = In other words you can have multiple of the same data input for a sample
+  
+Splits in Random forest 
+  Selects best feature for highest inforomation gain / gini impurity
+    0 entropy / 0 ginin indicates a perfect seperation of classes 
+
+n_estimator: 
+  Number of trees that will be used for voting
+  Of course more trees mean higher accuracy but computational time will also go up with this 
+  Usually start with 100 and increases (default)  
+
+max_depth: (One of the most important hyperparameter for increasing accuracy) (Default None) 
+  Deeper trees can capture more complex patterns 
+  Risk of overfitting however 
+  Experiment with values between 5 and 15 for depth is usual test values 
+
+max_features: Number of features to take into account for the most optimal splits 
+  Four values: auto, sqrt, log2, and None 
+
+max_samples: max Number of samples to train 
+
+max_leaf_nodes: Puts a limit on the splitting of the node
+  Reduces overfitting 
+
+
+Criterion:
+  Function to determine split quality 
+  Basically does same thing w/h Gini impurity as computationally faster, 
+
+min_samples_split: (Value between 2 to 6)
+  Minimum number of samples requried for a justifiable split
+  Higher numbers: Can prevent overfitting 
+  Lower numbers: risk of overfitting 
+  Usually starts with two an goes from there 
+
+Bootstrap: 
+  Whether to use bootstrap method for sampling 
+
+min_samples_leaf: 
+  Minimum samples requried to be at a leaf node (start with 1 and adjust) 
+  Higher minimum can prevent overfitting 
+  Smaller minimum can lead to overfitting 
+
+Why RandomForest? 
+  Perfect for better understanding / Visualizing the PATTERNS in the features column 
+
+Why NOT RandomForest? 
+  RandomForest is an exntension of the bagging ensemble learning ML model. Random sample selection with replacment 
+  Thus with an imbalanced classes, the model is not going to be very accurate.. So how do we fix this problem? 
+    OverBagging: Over Sample the undereprsented class  
+    UnderBagging: Under Sample the overrepersented class 
+    OverUnderBagging: Combining both methods 
+
+  This is fixable by the BalancedBaggingClassifier()
+    Utilizes OverUnderBagging strategy. However, if the the data balance is not too insignificant or regular randomForest better fit the data
+    it might end up being that the regular RandomForest was a better fit compared to the BalancedBaggingClassifier version. This can only
+    be studied by testing 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
