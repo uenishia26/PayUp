@@ -71,7 +71,7 @@ currentfilename = ""
 firstTime = True #Prevents adding column name every append to existing dataFrame
 finalcsvname = "formatedData.csv"
 
-df = pd.read_csv("./data1.csv")  #*** Change file path *** 
+df = pd.read_csv("./imagelabels.csv")  #*** Change file path *** 
 df["region_shape_attributes"] = df.apply(jsonCoordinates, axis=1) #Applies function for every row 
 df["region_attributes"] = df.apply(jsonLabel, axis=1)
 deleteCSV()
@@ -142,5 +142,5 @@ for row in df["region_shape_attributes"]:
 finalDF = finalizecsv(filenamelst, finalcsvname, labelTyp)
 finalDF = finalDF.drop(finalDF[(finalDF.label == 'dimension')].index)
 finalDF = finalDF.drop(['filename', 'width', 'height'], axis=1)
-finalDF.to_csv(finalcsvname)
+finalDF.to_csv(finalcsvname, index=False)
 
