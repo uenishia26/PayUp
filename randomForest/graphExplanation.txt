@@ -1,1 +1,21 @@
+#Explanation of the Graphical Data 
 
+gini - Shows the impurity (How mixed up the dataset is w/h different classes) (0 indicates only one class) (Can be entropy too)
+samples - Number of unique samples 
+value - [] The number of samples in order [itemPrice, item, name, total]
+class - majority class 
+
+The discrepancy between samples and value 
+  - Due to the nature of RandomForest using bootstrap w/h replacment for the samples the total value count and samples do not add up.
+    This is due to the fact that samples have only the unique count. 
+    Value has the entire bootstrapped Sample w/h (replacement) 
+      Further Explanation: 
+        samples = 335
+        value = [225, 220, 45, 23]
+        samples != value
+        This just means that value is the bootstrapped sample w/h replacement but in this bootstrap sample there are only 335 unique values that made 
+        it to this particular node. Thus, in this example, a lot of duplicates exist in the bootstrapped sample
+
+
+    
+    
