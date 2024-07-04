@@ -19,139 +19,60 @@ index = 25
 plt.imshow(train_set_x_orig[index])
 print ("y = " + str(train_set_y[:, index]) + ", it's a '" + classes[np.squeeze(train_set_y[:, index])].decode("utf-8") +  "' picture.")
 
-#(≈ 3 lines of code)
-# m_train = 
-# m_test = 
-# num_px = 
-# YOUR CODE STARTS HERE
+#Getting the number of the train and test sets 
 m_train = train_set_x_orig.shape[0]
 m_test = test_set_x_orig.shape[0]
 num_px = train_set_x_orig.shape[1]
 
-# YOUR CODE ENDS HERE
 
-print ("Number of training examples: m_train = " + str(m_train))
-print ("Number of testing examples: m_test = " + str(m_test))
-print ("Height/Width of each image: num_px = " + str(num_px))
-print ("Each image is of size: (" + str(num_px) + ", " + str(num_px) + ", 3)")
-print ("train_set_x shape: " + str(train_set_x_orig.shape))
-print ("train_set_y shape: " + str(train_set_y.shape))
-print ("test_set_x shape: " + str(test_set_x_orig.shape))
-print ("test_set_y shape: " + str(test_set_y.shape))
 
-# Reshape the training and test examples
-#(≈ 2 lines of code)
-# train_set_x_flatten = ...
-# test_set_x_flatten = ...
-# YOUR CODE STARTS HERE
+# Reshaping training / test set into a 1 column many row matrix 
 train_set_x_flatten = train_set_x_orig.reshape(train_set_x_orig.shape[0],-1).T
 test_set_x_flatten = test_set_x_orig.reshape(test_set_x_orig.shape[0],-1).T
-# YOUR CODE ENDS HERE
 
-# Check that the first 10 pixels of the second image are in the correct place
-assert np.alltrue(train_set_x_flatten[0:10, 1] == [196, 192, 190, 193, 186, 182, 188, 179, 174, 213]), "Wrong solution. Use (X.shape[0], -1).T."
-assert np.alltrue(test_set_x_flatten[0:10, 1] == [115, 110, 111, 137, 129, 129, 155, 146, 145, 159]), "Wrong solution. Use (X.shape[0], -1).T."
-
+#Normalizing the Data 
 train_set_x = train_set_x_flatten / 255.
-test_set_x = test_set_x_flatten / 255.# GRADED FUNCTION: sigmoid
+test_set_x = test_set_x_flatten / 255.
 
+#Sigmoid: Activation Function 
 def sigmoid(z):
-    """
-    Compute the sigmoid of z
-
-    Arguments:
-    z -- A scalar or numpy array of any size.
-
-    Return:
-    s -- sigmoid(z)
-    """
-
-    #(≈ 1 line of code)
-    # s = ...
-    # YOUR CODE STARTS HERE
     s = 1/(1+np.exp(-z))
-    
-    
-    # YOUR CODE ENDS HERE
-    
     return s
-# GRADED FUNCTION: initialize_with_zeros
 
+#Initalizes weight vector and bias
 def initialize_with_zeros(dim):
-    """
-    This function creates a vector of zeros of shape (dim, 1) for w and initializes b to 0.
-    
-    Argument:
-    dim -- size of the w vector we want (or number of parameters in this case)
-    
-    Returns:
-    w -- initialized vector of shape (dim, 1)
-    b -- initialized scalar (corresponds to the bias) of type float
-    """
-    
-    # (≈ 2 lines of code)
-    # w = ...
-    # b = ...
-    # YOUR CODE STARTS HERE
     w = np.zeros((dim,1))
     b = 0.0
-    
-    
-    # YOUR CODE ENDS HERE
-
     return w, b
 
-# GRADED FUNCTION: propagate
 
 def propagate(w, b, X, Y):
-    """
-    Implement the cost function and its gradient for the propagation explained above
-
-    Arguments:
-    w -- weights, a numpy array of size (num_px * num_px * 3, 1)
-    b -- bias, a scalar
-    X -- data of size (num_px * num_px * 3, number of examples)
-    Y -- true "label" vector (containing 0 if non-cat, 1 if cat) of size (1, number of examples)
-
+   """
     Return:
     grads -- dictionary containing the gradients of the weights and bias
             (dw -- gradient of the loss with respect to w, thus same shape as w)
             (db -- gradient of the loss with respect to b, thus same shape as b)
-    cost -- negative log-likelihood cost for logistic regression
-    
-    Tips:
-    - Write your code step by step for the propagation. np.log(), np.dot()
-    """
+    cost -- negative log-likelihood cost for logistic regression 
+"""
     
     m = X.shape[1]
     
-    # FORWARD PROPAGATION (FROM X TO COST)
-    #(≈ 2 lines of code)
-    # compute activation
-    # A = ...
-    # compute cost by using np.dot to perform multiplication. 
-    # And don't use loops for the sum.
-    # cost = ...                                
-    # YOUR CODE STARTS HERE
-    A = sigmoid(np.dot(w.T, X) + b) #Doing the dot product of weight and X and then passing this to sigmoid function
-    cost = -1/m * np.sum(Y * np.log(A) + (1 - Y) * np.log(1 - A))
+    # FORWARD PROPAGATION (FROM X TO COST) 
+    #A = Matrix of output after passing to activation function 
+    A = sigmoid(np.dot(w.T, X) + b) #Doing the dot product of weight and X and then passing this to sigmoid function 
+    cost = -1/m * np.sum(Y * np.log(A) + (1 - Y) * np.log(1 - A)) #Loss function equation 
     
-    
-    # YOUR CODE ENDS HERE
-
     # BACKWARD PROPAGATION (TO FIND GRAD)
-    #(≈ 2 lines of code)
-    # dw = ...
-    # db = ...
     # YOUR CODE STARTS HERE
     dw = 1/m * np.dot(X, (A-Y).T)
     db = 1/m * (np.sum(A-Y))
     
-    
-    # YOUR CODE ENDS HERE
+    #Removes axis of length 1 from the input array 
     cost = np.squeeze(np.array(cost))
 
-    
+    #Creating dictionary storing derivate for w and b 
+    #dw shape same as weight, just derivatie for every weight
+    #bias is a singular constant that is updated 
     grads = {"dw": dw,
              "db": db}
     
@@ -228,6 +149,18 @@ def optimize(w, b, X, Y, num_iterations=100, learning_rate=0.009, print_cost=Fal
 
 # GRADED FUNCTION: predict
 
+
+
+
+
+
+
+
+
+
+
+
+
 def predict(w, b, X):
     '''
     Predict whether the label is 0 or 1 using learned logistic regression parameters (w, b)
@@ -246,9 +179,6 @@ def predict(w, b, X):
     w = w.reshape(X.shape[0], 1)
     
     # Compute vector "A" predicting the probabilities of a cat being present in the picture
-    #(≈ 1 line of code)
-    # A = ...
-    # YOUR CODE STARTS HERE
     A = sigmoid(np.dot(w.T,X)+b)
     
     
@@ -257,12 +187,6 @@ def predict(w, b, X):
     for i in range(A.shape[1]):
         
         # Convert probabilities A[0,i] to actual predictions p[0,i]
-        #(≈ 4 lines of code)
-        # if A[0, i] > ____ :
-        #     Y_prediction[0,i] = 
-        # else:
-        #     Y_prediction[0,i] = 
-        # YOUR CODE STARTS HERE
         if A[0,i] > 0.5: 
             Y_prediction[0,i] = 1
         else:
@@ -272,6 +196,8 @@ def predict(w, b, X):
         # YOUR CODE ENDS HERE
     
     return Y_prediction
+
+
 
 def model(X_train, Y_train, X_test, Y_test, num_iterations=2000, learning_rate=0.5, print_cost=False):
     """
@@ -289,13 +215,13 @@ def model(X_train, Y_train, X_test, Y_test, num_iterations=2000, learning_rate=0
     Returns:
     d -- dictionary containing information about the model.
     """
-    # (≈ 1 line of code)   
+
     # initialize parameters with zeros
     # and use the "shape" function to get the first dimension of X_train
     # w, b = ...
     w,b = np.zeros((X_train.shape[0],1)),0
     
-    #(≈ 1 line of code)
+
     # Gradient descent 
     # params, grads, costs = ...
     params, grads, costs = optimize(w,b, X_train, Y_train, num_iterations, learning_rate, print_cost)
@@ -310,7 +236,6 @@ def model(X_train, Y_train, X_test, Y_test, num_iterations=2000, learning_rate=0
     # Y_prediction_test = ...
     # Y_prediction_train = ...
     
-    # YOUR CODE STARTS HERE
     Y_prediction_test = predict(w, b, X_test)
     Y_prediction_train = predict(w,b,X_train)
     
