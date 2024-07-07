@@ -1,7 +1,13 @@
 import random
+import sys
 import pickle
 import gzip
 import numpy as np
+import pandas as pd
+import random
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 
 class QuadraticCost(object):
@@ -63,7 +69,7 @@ class Network(object):
 
         return a
         
-    def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, evaluation_data=None, monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
+    def SGD(self, training_data, epochs, mini_batch_size, eta, lmbda = 0.0, nin = None, learnschd = False, evaluation_data=None, monitor_evaluation_cost=False, monitor_evaluation_accuracy=False, monitor_training_cost=False, monitor_training_accuracy=False):
         
         # if evalution_data is given create get the length of the evaluation_data
         if evaluation_data: n_data = len(evaluation_data)
@@ -71,8 +77,19 @@ class Network(object):
         n = len(training_data)
         evaluation_cost, evaluation_accuracy = [], []
         training_cost, training_accuracy = [], []
-        
+
+        count = 0
+        if nin:
+            epochs = sys.maxsize
+            if learnschd:
+                target_eta = eta / 128
         for j in range(epochs):
+
+            if count == nin and nin:
+                if learnschd and eta > target_eta:
+                    eta /= 2
+                else:
+                    break
             # Randomly shuffle the training_data
             random.shuffle(training_data)
             # Using the mini_batchs_size parameters create each mini_batches 
@@ -88,6 +105,10 @@ class Network(object):
             if monitor_training_accuracy:
                 accuracy = self.accuracy(training_data, convert=True)
                 training_accuracy.append(accuracy)
+                if j > 0 and training_accuracy[j] <= training_accuracy[j-1]:
+                    count += 1
+                else:
+                    count = 0 
                 print (f"Accuracy on training data: {accuracy} / {n}")
             if monitor_evaluation_cost:
                 cost = self.total_cost(evaluation_data, lmbda, convert=True)
@@ -96,6 +117,10 @@ class Network(object):
             if monitor_evaluation_accuracy:
                 accuracy = self.accuracy(evaluation_data)
                 evaluation_accuracy.append(accuracy)
+                if j > 0 and evaluation_accuracy[j] <= evaluation_accuracy[j-1]:
+                    count += 1
+                else:
+                    count = 0 
                 print(f"Accuracy on evaluation data: {self.accuracy(evaluation_data)} / {n_data}")
 
         return evaluation_cost, evaluation_accuracy, training_cost, training_accuracy
@@ -161,8 +186,8 @@ class Network(object):
         cost = 0.0
         for x, y in data:
             a = self.feedforward(x)
-            if convert: y = vectorized_result(y)
-            cost += self.cost.fn(a, y)/len(data)
+            if convert: y = vectorized_result(self.sizes[-1], y)
+            cost += (self.cost).fn(a, y)/len(data)
         cost += 0.5*(lmbda/len(data))*sum(np.linalg.norm(w)**2 for w in self.weights)
 
         return cost
@@ -186,7 +211,7 @@ def vectorized_result(j):
     return e
 
 def load_data():
-    f = gzip.open('./mnist.pkl.gz', 'rb')
+    f = gzip.open('neuroNetwork/mnist.pkl.gz', 'rb')
     u = pickle._Unpickler(f)
     u.encoding = 'latin1'
     training_data, validation_data, test_data = u.load()
@@ -204,11 +229,31 @@ def load_data_wrapper():
     test_data = list(zip(test_inputs, te_d[1]))
     return (training_data, validation_data, test_data)
 
-training_data, validation_data, test_data = load_data_wrapper()
+def vectorized_result(layer_size, j):
 
-net = Network([784, 10])
+    e = np.zeros((layer_size, 1))
+    e[j] = 1.0
 
-mec, mea, mtc, mta = net.SGD(training_data[:1000], 200, 10, 5.0, 0.025, evaluation_data=test_data[:100], monitor_evaluation_cost=True)
+    return e
 
-plt.plot(mec)
-plt.show()
+df = pd.read_csv("data/archive/Iris.csv") 
+df = df.drop(['Id'], axis=1)
+label_encoder = LabelEncoder()  
+df['Species']= label_encoder.fit_transform(df['Species'])
+x = StandardScaler().fit_transform(df[df.columns[:-1]].values)
+y = df[df.columns[-1]].values
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=123456, stratify=y)
+
+X_train = [np.reshape(x, (4, 1)) for x in X_train]
+X_test = [np.reshape(x, (4, 1)) for x in X_test]
+
+train_data = list(zip(X_train, y_train))
+test_data = list(zip(X_test, y_test))
+
+net = Network([4, 3, 3])
+# training_data, validation_data, test_data = load_data_wrapper()
+
+# net = Network([784, 30, 10])
+print(net.weights)
+net.SGD(train_data, 30, 5, 0.0025, lmbda=10, monitor_training_accuracy=True, monitor_training_cost=True)
+print(f"{net.accuracy(test_data)}/{len(test_data)}")
