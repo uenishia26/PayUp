@@ -4,6 +4,7 @@ import random
 import sys
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 import matplotlib.pyplot as plt
 
 def sigmoid(z):
@@ -236,44 +237,64 @@ class Network(object):
 
         return cost
     
-df = pd.read_csv("data/archive/Iris.csv")
-df = df.drop(['Id'], axis=1)
+    def class_report(self, data, convert=False):
+
+        if convert:
+            predictions = [net.feedforward(x) for (x,y) in data]
+            predicted_labels = [np.argmax(pred) for pred in predictions]
+            true_labels = [np.argmax(y) for (x,y) in data]
+        else:
+            predictions = [net.feedforward(x) for (x,y) in data]
+            predicted_labels = [np.argmax(pred) for pred in predictions]
+            true_labels = [y for (x,y) in data]
+
+        return classification_report(true_labels, predicted_labels, target_names=one_hot_encoder.categories_[0])
+
+    
+df = pd.read_csv("data/archive/iris_extended.csv")
+df = df[['species', 'petal_length', 'petal_width', 'sepal_length', 'sepal_width']]
 
 one_hot_encoder = OneHotEncoder(sparse_output=False)
-species_encoded = one_hot_encoder.fit_transform(df[['Species']])
+species_encoded = one_hot_encoder.fit_transform(df[['species']])
 
-df = df.drop(['Species'], axis=1)
-df = pd.concat([df, pd.DataFrame(species_encoded, columns=one_hot_encoder.get_feature_names_out(['Species']))], axis=1)
+df = df.drop(['species'], axis=1)
+df = pd.concat([df, pd.DataFrame(species_encoded, columns=one_hot_encoder.get_feature_names_out(['species']))], axis=1)
 
 x = StandardScaler().fit_transform(df[df.columns[:-3]].values) 
 y = df[df.columns[-3:]].values
 
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=123456, stratify=y)
 
+X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.25, random_state=123456, stratify=y_train) # 0.25 x 0.8 = 0.2
+
 y_train = [np.reshape(y, (3, 1)) for y in y_train]
 y_test = [np.reshape(y, (3, 1)) for y in y_test]
+y_val = [np.reshape(y, (3, 1)) for y in y_val]
+
 
 X_train = [np.reshape(x, (4, 1)) for x in X_train]
 X_test = [np.reshape(x, (4, 1)) for x in X_test]
+X_val = [np.reshape(x, (4, 1)) for x in X_val]
 
 train_data = list(zip(X_train, y_train))
 test_data = list(zip(X_test, y_test))
+val_data = list(zip(X_val, y_val))
 
-net = Network([4, 6, 3, 3])
-ec, ea, tc, ta = net.SGD(train_data, 30, 5, 0.1, lmbda=5, lschd=5, monitor_training_accuracy=True, monitor_training_cost=True)
-print(net.accuracy(test_data, convert=True)/len(test_data))
+net = Network([4, 3, 3])
+ec, ea, tc, ta = net.SGD(train_data, 30, 100, 0.25, lmbda=10, lschd=5, evaluation_data=val_data, monitor_evaluation_accuracy=True, monitor_evaluation_cost=True)
+print(net.class_report(test_data, convert=True))
 
 plt.figure(figsize=(10, 5))
 
 plt.subplot(1, 2, 1)
-plt.plot(tc, label='Training Cost')
+plt.plot(ec, label='Training Cost')
 plt.xlabel('Epochs')
 plt.ylabel('Cost')
 plt.title('Training Cost')
 plt.legend()
 
 plt.subplot(1, 2, 2)
-plt.plot(ta, label='Training Accuracy')
+plt.plot(ea, label='Training Accuracy')
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
 plt.title('Training Accuracy')
