@@ -1,6 +1,7 @@
 import pandas as pd 
 import numpy as np 
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import f1_score
 import numpy as np
 import copy
 import matplotlib.pyplot as plt
@@ -8,6 +9,8 @@ import h5py
 import scipy
 from PIL import Image
 from scipy import ndimage
+from sklearn.metrics import classification_report
+import matplotlib.pyplot as plt
 
 #Code for loading dataset is taken from kaggle MUHAMMED DALKIRAN
 def load_dataset():
@@ -59,11 +62,11 @@ def initalizeMatrix(X):
 
 #Activation Function 
 def sigmoid(z): 
-    return 1/(np.exp(-z))
+    return 1/(1+np.exp(-z))
 
 #Forward and backward propogation (Used for training model)
 def propogate(w,b,X,y): 
-    m = X.shape[0]
+    m = X.shape[1]
     
     #Forward Propogation 
     z = np.dot(w.T, X) + b
@@ -81,7 +84,7 @@ def propogate(w,b,X,y):
 #Adjust weights and biases (Used for training model)
 def optimize(X, y, w,b, epoch, learning_rate): 
     #Getting the current cost 
-    m = X.shape[0]
+    m = X.shape[1]
 
     for i in range(epoch): 
         A, gradient = propogate(w,b,X,y)
@@ -91,8 +94,8 @@ def optimize(X, y, w,b, epoch, learning_rate):
         db = gradient["db"]
 
         #Adjusting weights 
-        w = w - (learning_rate*w)
-        b = b - (learning_rate*b)
+        w = w - (learning_rate*dw)
+        b = b - (learning_rate*db)
 
         print(f"Current cost: {cost}")
     
@@ -102,15 +105,14 @@ def predict(X,w,b):
     #Calculating y hat 
     A = sigmoid(np.dot(w.T, X) + b)
     #Initalizing Prediction Array 
-    prediction = np.zeros((X.shape[0],1))
-    print(f"Shape of prediction{prediction.shape}")
+    prediction = np.zeros((X.shape[1],1))
 
-    for i in range(X.shape[0]):
+    for i in range(X.shape[1]):
         # >0.5 is cat / <0.5 is not Cat
         if A[0,i] > 0.5: 
-            prediction[i,1] = 1
+            prediction[i,0] = 1
         else: 
-            prediction[i,1] = 0 
+            prediction[i,0] = 0 
     
     return prediction 
 
@@ -122,10 +124,27 @@ def model(x_train, y_train, learningRate, epoch):
     #Optimized weights and biases 
     w,b = optimize(x_train, y_train,w,b, epoch, learningRate)
 
-    yPredict = predict(x_train, w,b)
-    print(yPredict)
+    return w,b
 
-model(train_set_x, train_set_y, 0.0005, 10)
+#Plotting depending on 
+f1Score = []
+for x in range(1000, 11000, 1000): 
+    w,b = model(train_set_x, train_set_y, 0.1, x)
+    ypredict = predict(test_set_x,w,b) #Shape is (DataInput,1)
+    ypredict = ypredict.reshape((-1))
+    test_set_y = test_set_y.reshape((-1))
+    f1Score.append(f1_score(ypredict, test_set_y))
+
+print(f1Score)
+chartX = np.arange(1000,11000,1000)
+plt.figure(figsize=(10,6))
+plt.plot(chartX,f1Score)
+plt.xlabel("Epoch inc 1000-10000")
+plt.ylabel("f1Score")
+plt.show()
+
+
+
 
     
     
