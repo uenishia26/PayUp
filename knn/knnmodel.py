@@ -10,21 +10,22 @@ from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import recall_score
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("./formatedData.csv") 
+df = pd.read_csv("./labeldata.csv", encoding='utf-8', encoding_errors='ignore')
+df = df.drop(['word'], axis=1)
 
 x = df[df.columns[:-1]].values
 y = df[df.columns[-1]].values
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1, stratify=y, shuffle=True)
 
-smt = SMOTE(random_state=11)
-X_train, y_train = smt.fit_resample(X_train, y_train)
+# smt = SMOTE(random_state=11)
+# x_train, y_train = smt.fit_resample(X_train, y_train)
 
 def prepare_dataframe(train_score_dict,key,columns):
     df_train = pd.DataFrame(train_score_dict,index = ["Train Score"])
     df_train.columns = [key + str(c) for c in columns]  
     return df_train
 
-def knn_model(n_neighbors = 5,weights = 'uniform',algorithm = 'auto',p = 2):
+def knn_model(n_neighbors = 25,weights = 'uniform',algorithm = 'auto',p = 2):
     knn = KNeighborsClassifier(n_neighbors = n_neighbors, weights = weights, algorithm = algorithm, p = p)
 
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=1) 
@@ -39,7 +40,7 @@ def knn_model(n_neighbors = 5,weights = 'uniform',algorithm = 'auto',p = 2):
 
     return statistics.mean(train_score)
 
-k_list = list(np.arange(3,int(len(df)/2), 2))
+k_list = list(np.arange(3,96, 2))
 train_kscore_dict = {}
 
 for k in k_list:
@@ -52,6 +53,20 @@ k_result.to_csv('k-value.csv')
 maxk = [(value, key) for key, value in train_kscore_dict.items()]
 print('max k-value:', max(maxk)[1])
 best_k = max(maxk)[1]
+
+train_pscore_dict = {}
+p_list = list(np.arange(1,12))
+
+for p in p_list:
+    train_score = knn_model(p=p)
+    train_pscore_dict[p] = (train_score)
+
+p_result = prepare_dataframe(train_pscore_dict,"P = ",p_list)
+p_result.to_csv('p-value.csv')
+
+maxp = [(value, key) for key, value in train_pscore_dict.items()]
+print('max p-value:', max(maxp)[1])
+best_p = max(maxp)[1]
 
 w_list = ['uniform','distance']
 
@@ -68,23 +83,8 @@ maxw = [(value, key) for key, value in train_wscore_dict.items()]
 print('max weight:', max(maxw)[1])
 best_w = max(maxw)[1]
 
-p_list = list(np.arange(1,12))
-
-train_pscore_dict = {}
-
-for p in p_list:
-    train_score = knn_model(p = p)
-    train_pscore_dict[p] = (train_score)
-
-p_result = prepare_dataframe(train_pscore_dict,"P = ",p_list)
-p_result.to_csv('p-value.csv')
-
-maxp = [(value, key) for key, value in train_pscore_dict.items()]
-print('max p-value:', max(maxp)[1])
-best_p = max(maxp)[1]
-
 print(f'Best parameters {best_k}, {best_w}, {best_p}')
-knn_defualt = KNeighborsClassifier(n_neighbors=best_k,weights=best_w,algorithm='auto',p=best_p)
+knn_defualt = KNeighborsClassifier(n_neighbors=best_k,weights='distance',algorithm='auto',p=best_p)
 knn_defualt.fit(X_train,y_train)
 y_pred = knn_defualt.predict(X_test)
 print(classification_report(y_test, y_pred))

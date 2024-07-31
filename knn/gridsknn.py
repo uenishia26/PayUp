@@ -10,7 +10,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("./formatedData.csv") 
+df = pd.read_csv("./labeldata.csv", encoding='utf-8', encoding_errors='ignore')
+df = df.drop(['word'], axis=1) 
 print(df['label'].value_counts())
 
 label_encoder = LabelEncoder() 
@@ -18,23 +19,38 @@ df['label']= label_encoder.fit_transform(df['label'])
 
 x = df[df.columns[:-1]].values
 y = df[df.columns[-1]].values
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=123456, stratify=y)
+X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1, stratify=y, shuffle=True)
 
-smt = SMOTE(random_state=11)
-X_train, y_train = smt.fit_resample(X_train, y_train)
+# smt = SMOTE(random_state=11)
+# X_train, y_train = smt.fit_resample(X_train, y_train)
 
 print(df['label'].value_counts())
-parameters = {'n_neighbors':np.arange(3,26, 2), 'weights':('uniform','distance'), 'algorithm':('auto','ball_tree','kd_tree','brute'), 'p':np.arange(1,11)}
+parameters = {'n_neighbors':np.arange(3,26 ), 'weights':('uniform','distance'), 'p':np.arange(1,11), 'algorithm': ('auto', 'ball_tree', 'kd_tree', 'brute')}
 knn = KNeighborsClassifier()
 gscv = GridSearchCV(estimator=knn, param_grid=parameters, cv=5, scoring='recall_macro')
 gscv.fit(X_train,y_train)
 print("Hyperparameters:",gscv.best_params_)
 
-y_pred = gscv.predict(X_test)
+for params in gscv.best_params_:
+    if params == 'algorithm':
+        best_a = gscv.best_params_[params]
+    if params == 'n_neighbors':
+        best_k = gscv.best_params_[params]
+    if params == 'p':
+        best_p = gscv.best_params_[params]
+    if params == 'weights':
+        best_w = gscv.best_params_[params]
+
+print (best_k, best_p, best_w, best_a)
+
+knn_default = KNeighborsClassifier(n_neighbors=best_k, algorithm=best_a, p=best_p, weights=best_w)
+knn_default.fit(X_train,y_train)
+
+y_pred = knn_default.predict(X_test)
 print(classification_report(y_test, y_pred))
 
-cm = confusion_matrix(y_test, y_pred, labels=gscv.classes_)
-disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=gscv.classes_)
+cm = confusion_matrix(y_test, y_pred, labels=knn_default.classes_)
+disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=knn_default.classes_)
 disp.plot()
 plt.show()
 
