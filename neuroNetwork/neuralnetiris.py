@@ -67,6 +67,7 @@ class Network(object):
 
     def __init__(self, sizes, cost=CrossEntropyCost) -> None:
 
+        random.seed(1)
         # initialize the number of layers of the neural network
         # initialize the weights and biases matrices
         self.num_layers = len(sizes)
@@ -240,11 +241,11 @@ class Network(object):
     def class_report(self, data, convert=False):
 
         if convert:
-            predictions = [net.feedforward(x) for (x,y) in data]
+            predictions = [self.feedforward(x) for (x,y) in data]
             predicted_labels = [np.argmax(pred) for pred in predictions]
             true_labels = [np.argmax(y) for (x,y) in data]
         else:
-            predictions = [net.feedforward(x) for (x,y) in data]
+            predictions = [self.feedforward(x) for (x,y) in data]
             predicted_labels = [np.argmax(pred) for pred in predictions]
             true_labels = [y for (x,y) in data]
 
@@ -279,6 +280,8 @@ X_val = [np.reshape(x, (4, 1)) for x in X_val]
 train_data = list(zip(X_train, y_train))
 test_data = list(zip(X_test, y_test))
 val_data = list(zip(X_val, y_val))
+
+
 
 net = Network([4, 3, 3])
 ec, ea, tc, ta = net.SGD(train_data, 30, 100, 0.25, lmbda=10, lschd=5, evaluation_data=val_data, monitor_evaluation_accuracy=True, monitor_evaluation_cost=True)

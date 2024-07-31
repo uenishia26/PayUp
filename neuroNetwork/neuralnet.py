@@ -50,12 +50,14 @@ class Network(object):
 
     def default_weight_initializer(self):
 
+        random.seed(1)
         # intiate biases as a random number between 0 and the standard deviation of 1
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         # intiate weights as a random number between 0 and the standard deviation of 1 but divided by the sqrt of the number of weights to that neruon
         self.weights = [np.random.randn(y, x)/np.sqrt(x) for x, y in zip(self.sizes[:-1], self.sizes[1:])]
     def large_weight_intializer(self):
 
+        random.seed(1)
         # intiate biases and weights as a random number between 0 and the standard deviation of 1
         self.biases = [np.random.randn(y, 1) for y in self.sizes[1:]]
         self.weights = [np.random.randn(y, x) for x, y in zip(self.sizes[:-1], self.sizes[1:])]
@@ -221,7 +223,7 @@ def load_data():
 def load_data_wrapper():
     tr_d, va_d, te_d = load_data()
     training_inputs = [np.reshape(x, (784, 1)) for x in tr_d[0]]
-    training_results = [vectorized_result(y) for y in tr_d[1]]
+    training_results = [vectorized_result(10, y) for y in tr_d[1]]
     training_data = list(zip(training_inputs, training_results))
     validation_inputs = [np.reshape(x, (784, 1)) for x in va_d[0]]
     validation_data = list(zip(validation_inputs, va_d[1]))
@@ -236,24 +238,9 @@ def vectorized_result(layer_size, j):
 
     return e
 
-df = pd.read_csv("data/archive/Iris.csv") 
-df = df.drop(['Id'], axis=1)
-label_encoder = LabelEncoder()  
-df['Species']= label_encoder.fit_transform(df['Species'])
-x = StandardScaler().fit_transform(df[df.columns[:-1]].values)
-y = df[df.columns[-1]].values
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=123456, stratify=y)
 
-X_train = [np.reshape(x, (4, 1)) for x in X_train]
-X_test = [np.reshape(x, (4, 1)) for x in X_test]
+training_data, validation_data, test_data = load_data_wrapper()
 
-train_data = list(zip(X_train, y_train))
-test_data = list(zip(X_test, y_test))
-
-net = Network([4, 3, 3])
-# training_data, validation_data, test_data = load_data_wrapper()
-
-# net = Network([784, 30, 10])
-print(net.weights)
-net.SGD(train_data, 30, 5, 0.0025, lmbda=10, monitor_training_accuracy=True, monitor_training_cost=True)
+net = Network([784, 30, 10])
+net.SGD(training_data, 30, 5, 0.0025, lmbda=10, monitor_training_accuracy=True, monitor_training_cost=True)
 print(f"{net.accuracy(test_data)}/{len(test_data)}")
