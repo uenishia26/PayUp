@@ -10,56 +10,68 @@ import cv2
 import re
 import time
 import numpy as np
+import csv
 
 pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 def crop_image(image, text):
-    if (image.shape[0] > 1000 and image.shape[1] > 1000):
-        xval = []
-        yval = []
-        for vertex in text.bounding_poly.vertices:  
-            xval.append(vertex.x)
-            yval.append(vertex.y)
-        y = image.shape[1] - max(yval)
-        x = min(xval)
-        h = image.shape[1] - min(yval)
-        w = max(xval)
-        image = image[x:w, y:h]
+    xval = []
+    yval = []
+    for vertex in text.bounding_poly.vertices:  
+        xval.append(vertex.x)
+        yval.append(vertex.y)
+    y = min(yval)
+    x = min(xval)
+    h = image.shape[0] - min(yval)
+    w = max(xval)
+    image = image[y:h, x:w]
     return image
 
-def ouput_image(image):
+def ouput_image(image, path):
     # Optionally, save or display the rotated image
-    output_path = './test/' + name
-    cv2.imwrite(output_path, image)
-    print(f"Rotated image saved at {output_path}")
+    cv2.imwrite(path, image)
+    print(f"Rotated image saved at {path}")
 
 def preprocess_image(image_path, text):
     image = cv2.imread(image_path)
     if image is None:
         raise FileNotFoundError(f"Image not found at path: {image_path}")
     
+    image = crop_image(image, text)
+
+    image = cv2.resize(image, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
+    
     # Convert to grayscale
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
 
     # Apply dilation and erosion to remove noise
     kernel = np.ones((1, 1), np.uint8)
     image = cv2.dilate(image, kernel, iterations=1)
     image = cv2.erode(image, kernel, iterations=1)
 
-    # Apply thresholding
     thresh = cv2.threshold(image, 0, 255, cv2.THRESH_OTSU)[0]
-    
-    image = crop_image(image, text)
-    # Resize the image to improve OCR accuracy
-    thresh2 = cv2.threshold(image, 0, 255, cv2.THRESH_OTSU)[0]
 
-    image = cv2.threshold(image, max(thresh, thresh2), 255, cv2.THRESH_BINARY)[1]
+    image = cv2.threshold(image, thresh, 255, cv2.THRESH_BINARY)[1]
+
+    image = cv2.adaptiveThreshold(image,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
+    # Apply Gaussian blur
+    image = cv2.bilateralFilter(image,9,75,75)
+
+    # Define a kernel for morphological operations
+    kernel = np.ones((1, 1), np.uint8)
+
+    # Perform opening (erosion followed by dilation) to remove small dots
+    image = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+
+    # Optionally, perform closing (dilation followed by erosion) to close small holes
+    image = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
 
     return image
 
 def image_orient(path, texts):
     try:
+        ogimg = cv2.imread(path)
+        ogimg = crop_image(ogimg, texts[0])
         image = preprocess_image(path, texts[0])
         
         start_time = time.time()
@@ -72,24 +84,21 @@ def image_orient(path, texts):
         if confidence:
             confidence = float(confidence)
         
-        rotated_image = image  # Default to the original image
+        rotated_image = ogimg  # Default to the original image
         
         if angle and confidence:
             angle = int(angle)
             if angle == 90 and confidence > 2.0:
-                rotated_image = cv2.rotate(image, cv2.ROTATE_90_COUNTERCLOCKWISE)
-                ouput_image(rotated_image)
+                rotated_image = cv2.rotate(ogimg, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                ouput_image(rotated_image, path)
             elif angle == 180 and confidence > 2.0:
-                rotated_image = cv2.rotate(image, cv2.ROTATE_180)
-                ouput_image(rotated_image)
+                rotated_image = cv2.rotate(ogimg, cv2.ROTATE_180)
+                ouput_image(rotated_image, path)
             elif angle == 270 and confidence > 2.0:
-                rotated_image = cv2.rotate(image, cv2.ROTATE_90_CLOCKWISE)
-                ouput_image(rotated_image)
+                rotated_image = cv2.rotate(ogimg, cv2.ROTATE_90_CLOCKWISE)
+                ouput_image(rotated_image, path)
             else:
-                if (confidence < 2.0):
-                    print("Take a better photo")
-                else:
-                    ouput_image(rotated_image)
+                ouput_image(rotated_image, path)
         
     except Exception as e:
         print(f"Take a better photo {e}")
@@ -134,37 +143,54 @@ def extract_info(imginfo, pattern, label):
 
 
 #Creating cloud object to interact with GoogleVisionAPI (Setup for API interaction)
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = './dataentryautomation-793ea24c158f.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'data/APIKeys/apiKey'
 client = vision.ImageAnnotatorClient() 
+foldername = './testing/'
 
-#Editting/Sending img to GoogleVision OCR API
-name = 'IMG_0213.jpg'
-path = './test/' + name
+with open('labeldata.csv', 'w', newline='') as file:
+    writer = csv.writer(file)
+    field = ["word", "x1", "y1", "x2", "y2", "x3", "y3", "x4", "y4", "label"]
+    writer.writerow(field)
 
+    for name in os.listdir(foldername):
+        # Construct full file path
+        path = os.path.join(foldername, name)
+        # Check if the file is an image by checking its extension
+        if path.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif')):
+            try:
+                # Open the image file
+                with Image.open(path) as img:
+                    print(f"Opened image: {path}")
+                    with io.open(path, 'rb') as image_file: #read in binary mode 
+                        binaryImg = image_file.read()
+                    clientImage = vision.Image(content=binaryImg) #Creating an image object 
+                    response = client.text_detection(image=clientImage)
+                    texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
+                    img = image_orient(path,texts)
+            except Exception as e:
+                print(f"Could not open image {path}. Error: {e}")
 
-with io.open(path, 'rb') as image_file: #read in binary mode 
-    binaryImg = image_file.read()
-clientImage = vision.Image(content=binaryImg) #Creating an image object 
-response = client.text_detection(image=clientImage)
-texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
-img = image_orient(path,texts)
-with io.open(path, 'rb') as image_file: #read in binary mode 
-    binaryImg = image_file.read()
-clientImage = vision.Image(content=binaryImg) #Creating an image object 
-response = client.text_detection(image=clientImage)
-texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
-#Creating txt file for parsed OCR Data\
-ocrdata = {}
-f = open('./data.txt', 'a')
-for text in texts: 
-    f.write(f"Description: {text.description}\n")
-    f.write("Vertices:\n")
-    tmp = []
-    for vertex in text.bounding_poly.vertices: 
-        f.write(f"({vertex.x}, {vertex.y})\n")
-        tmp.append(vertex.x/img.shape[1])
-        tmp.append(vertex.y/img.shape[0])
-    ocrdata[text.description] = tmp
-    f.write("\n")
+        with io.open(path, 'rb') as image_file: #read in binary mode 
+            binaryImg = image_file.read()
+        clientImage = vision.Image(content=binaryImg) #Creating an image object 
+        response = client.text_detection(image=clientImage)
+        texts = response.text_annotations #Returns a strcutured return TextAnnotations object 
 
-print(ocrdata)
+    # #Creating txt file for parsed OCR Data
+        ocrdata = {}
+        f = open('./data.txt', 'a', encoding="utf-8", errors="replace")
+        for text in texts: 
+            f.write(f"Description: {text.description}\n")
+            f.write("Vertices:\n")
+            tmp = []
+            csvrows = [text.description]
+            for vertex in text.bounding_poly.vertices: 
+                f.write(f"({vertex.x}, {vertex.y})\n")
+                tmp.append(vertex.x)
+                tmp.append(vertex.y)
+                csvrows.append(vertex.x/img.shape[1])
+                csvrows.append(vertex.y/img.shape[0])
+            ocrdata[text.description] = tmp
+            writer.writerow(csvrows)
+            f.write("\n")
+
