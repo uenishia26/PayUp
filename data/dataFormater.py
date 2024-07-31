@@ -40,8 +40,8 @@ def appendToCSV(newdf, currentcsv):
         newdf.to_csv(currentcsv, mode='a', header=False, index=False)
 
 def deleteCSV():
-    if os.path.exists("formatedData.csv"):
-        os.remove("formatedData.csv")
+    if os.path.exists("data/formatedData.csv"):
+        os.remove("data/formatedData.csv")
 
 #Adding class lst & fileName lst 
 def finalizecsv(filenamelst, finalcsvname, labeltyp):
@@ -69,9 +69,9 @@ fileindex = 0
 filenamelst = []
 currentfilename = ""
 firstTime = True #Prevents adding column name every append to existing dataFrame
-finalcsvname = "formatedData.csv"
+finalcsvname = "data/formatedData.csv"
 
-df = pd.read_csv("./imagelabels.csv")  #*** Change file path *** 
+df = pd.read_csv("data/imagelabels.csv")  #*** Change file path *** 
 df["region_shape_attributes"] = df.apply(jsonCoordinates, axis=1) #Applies function for every row 
 df["region_attributes"] = df.apply(jsonLabel, axis=1)
 deleteCSV()
