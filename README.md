@@ -5,4 +5,4 @@ Simple as Pick, Pic, and Paid
 - Pick the friends (Select all the friends participating in the event)
 - Pic the receipts (Take picture of all the reciepts used)
 - Paid by venmo (The app calculates everything and sends venmo request so you get paid)
-![dribble_final](https://github.com/user-attachments/assets/1668de33-5b12-4e34-8974-aef0bf9d2516)
+![ezgif-com-gif-maker-11](https://github.com/user-attachments/assets/61a889cc-d314-406c-97ed-9e5b865398b4)
