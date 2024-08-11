@@ -4,4 +4,4 @@
 
 <p>Our app is very easy to use. User first select all friends partipacting in the event</P>
 
-![INnnHQyY_400x400](https://github.com/user-attachments/assets/4ca07948-9ded-4635-a262-57adef423e5f)
+![giphy](https://github.com/user-attachments/assets/6f65c1a6-a4e4-4a09-9196-06de9fc507ca)
